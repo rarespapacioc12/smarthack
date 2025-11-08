@@ -158,14 +158,28 @@ export default function StudentHomeworkPage() {
     try {
       // Upload file to Supabase Storage
       const fileExt = uploadedFile.name.split('.').pop();
-      const fileName = `${profile.id}/${enrollment.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${profile.id}/${enrollment.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase
         .storage
         .from('submissions')
         .upload(fileName, uploadedFile);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        let errorMessage = 'Failed to upload file to storage.';
+
+        if (uploadError.message.includes('row-level security')) {
+          errorMessage = 'Storage access denied. Please check your permissions.';
+        } else if (uploadError.message.includes('size')) {
+          errorMessage = 'File is too large. Maximum file size is 50MB.';
+        } else if (uploadError.message) {
+          errorMessage = `Upload failed: ${uploadError.message}`;
+        }
+
+        alert(`❌ ${errorMessage}\n\nFile: ${uploadedFile.name}\n\nPlease try again or contact your teacher if the problem persists.`);
+        return;
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase
@@ -174,14 +188,22 @@ export default function StudentHomeworkPage() {
         .getPublicUrl(fileName);
 
       // Create submission record
-      await createSubmission({
-        enrollment_id: enrollment.id,
-        student_id: profile.id,
-        homework_id: homeworkId,
-        file_url: publicUrl,
-        file_name: uploadedFile.name,
-        file_type: uploadedFile.type,
-      });
+      try {
+        await createSubmission({
+          enrollment_id: enrollment.id,
+          student_id: profile.id,
+          homework_id: homeworkId,
+          file_url: publicUrl,
+          file_name: uploadedFile.name,
+          file_type: uploadedFile.type,
+        });
+      } catch (dbError: any) {
+        console.error('Database error:', dbError);
+        // If DB insert fails, try to clean up the uploaded file
+        await supabase.storage.from('submissions').remove([fileName]);
+        alert(`❌ Failed to save submission to database.\n\nFile: ${uploadedFile.name}\nError: ${dbError.message || 'Unknown error'}\n\nPlease try again or contact your teacher.`);
+        return;
+      }
 
       // Reload submissions
       const submissionsData = await getSubmissions({
@@ -190,10 +212,21 @@ export default function StudentHomeworkPage() {
       setSubmissions(submissionsData);
 
       setUploadedFile(null);
+<<<<<<< HEAD
       toast.success('File uploaded!', 'Your file has been uploaded successfully.');
     } catch (error: any) {
       console.error('Error uploading file:', error);
       toast.error('Upload failed', 'Error uploading file. Please try again.');
+=======
+      // Reset file input
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+
+      alert(`✅ File uploaded successfully!\n\n${uploadedFile.name}\n\nYour teacher will be able to see this file when reviewing your submission.`);
+    } catch (error: any) {
+      console.error('Unexpected error uploading file:', error);
+      alert(`❌ Unexpected error uploading file.\n\nFile: ${uploadedFile.name}\nPlease try again or contact your teacher if the problem persists.`);
+>>>>>>> 71a7763 (versiune care merge)
     } finally {
       setUploading(false);
     }
