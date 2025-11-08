@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Trash2, Eye, Shield, Info } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/ui/toast';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -14,6 +15,7 @@ interface DataPrivacyPanelProps {
 }
 
 export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -44,10 +46,10 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
 
       // Display data in a modal or new page
       console.log('User Data:', { profile, submissions, homeworks });
-      alert('Your data has been loaded. Check the console for details. In production, this would show a detailed view.');
+      toast.success('Data loaded successfully', 'Check the console for details. In production, this would show a detailed view.');
     } catch (error) {
       console.error('Error viewing data:', error);
-      alert('Error loading your data. Please try again.');
+      toast.error('Error loading your data', 'Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -115,9 +117,10 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success('Data exported successfully', `Your data has been downloaded to my-data-${new Date().toISOString()}.json`);
     } catch (error) {
       console.error('Error exporting data:', error);
-      alert('Error exporting your data. Please try again.');
+      toast.error('Error exporting your data', 'Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -138,7 +141,7 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
 
     const finalConfirm = prompt('Type DELETE to confirm:');
     if (finalConfirm !== 'DELETE') {
-      alert('Deletion cancelled.');
+      toast.info('Deletion cancelled', 'Your data is safe.');
       return;
     }
 
@@ -152,11 +155,11 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
       // Delete user data (RLS policies will handle cascade)
       await supabase.from('profiles').delete().eq('id', userId);
 
-      alert('Your data has been deleted. You will be logged out.');
+      toast.success('Data deleted successfully', 'Your data has been deleted. You will be logged out.');
       // In production, handle logout and redirect
     } catch (error) {
       console.error('Error deleting data:', error);
-      alert('Error deleting your data. Please contact support.');
+      toast.error('Error deleting your data', 'Please contact support.');
     } finally {
       setLoading(false);
     }
@@ -164,11 +167,13 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="card-hover border-2 border-purple-500/20 bg-gradient-to-br from-white to-purple-50/50 dark:from-zinc-900 dark:to-purple-950/20 shadow-lg animate-scale-in" style={{ animationDelay: '0.2s' }}>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-blue-600" />
-            <CardTitle>Data Privacy & Transparency</CardTitle>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center shadow-md">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <CardTitle className="text-xl">Data Privacy & Transparency</CardTitle>
           </div>
           <CardDescription>
             You have full control over your personal data. View, export, or delete your information at any time.
@@ -179,7 +184,7 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 border-2 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 smooth-transition hover:scale-105"
               onClick={handleViewData}
               disabled={loading}
             >
@@ -189,7 +194,7 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
 
             <Button
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 border-2 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-950/20 smooth-transition hover:scale-105"
               onClick={handleExportData}
               disabled={loading}
             >
@@ -199,7 +204,7 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
 
             <Button
               variant="destructive"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 shadow-md hover:shadow-lg smooth-transition hover:scale-105"
               onClick={handleDeleteData}
               disabled={loading}
             >
@@ -211,14 +216,14 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
           <div className="pt-4 border-t">
             <button
               onClick={() => setShowExplanation(!showExplanation)}
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+              className="flex items-center gap-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 smooth-transition"
             >
-              <Info className="w-4 h-4" />
+              <Info className="w-4 h-4 text-blue-600" />
               {showExplanation ? 'Hide' : 'Show'} what data we collect
             </button>
 
             {showExplanation && (
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm space-y-3">
+              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200/50 dark:border-blue-800/50 text-sm space-y-3 animate-fade-in">
                 <div>
                   <h4 className="font-semibold mb-1">Personal Information</h4>
                   <p className="text-zinc-600 dark:text-zinc-400">
@@ -256,9 +261,14 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="card-hover border-2 border-orange-500/20 bg-gradient-to-br from-white to-orange-50/50 dark:from-zinc-900 dark:to-orange-950/20 shadow-lg animate-scale-in" style={{ animationDelay: '0.3s' }}>
         <CardHeader>
-          <CardTitle>Algorithmic Transparency</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 flex items-center justify-center shadow-md">
+              <Info className="w-6 h-6 text-white" />
+            </div>
+            <CardTitle className="text-xl">Algorithmic Transparency</CardTitle>
+          </div>
           <CardDescription>
             Understand how our algorithms make decisions about recommendations and evaluations
           </CardDescription>
@@ -266,9 +276,9 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
 
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            <div className="p-4 border rounded-lg">
+            <div className="p-4 border-2 border-blue-500/20 rounded-lg bg-gradient-to-br from-blue-50/50 to-white dark:from-blue-950/10 dark:to-zinc-900 card-hover shadow-sm">
               <div className="flex items-start gap-3">
-                <Badge>Recommendations</Badge>
+                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">Recommendations</Badge>
                 <div className="flex-1">
                   <h4 className="font-semibold mb-2">How tasks are recommended to you:</h4>
                   <ul className="text-sm space-y-1 text-zinc-600 dark:text-zinc-400">
@@ -282,9 +292,9 @@ export function DataPrivacyPanel({ userId }: DataPrivacyPanelProps) {
               </div>
             </div>
 
-            <div className="p-4 border rounded-lg">
+            <div className="p-4 border-2 border-green-500/20 rounded-lg bg-gradient-to-br from-green-50/50 to-white dark:from-green-950/10 dark:to-zinc-900 card-hover shadow-sm">
               <div className="flex items-start gap-3">
-                <Badge variant="secondary">Reputation</Badge>
+                <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white border-none">Reputation</Badge>
                 <div className="flex-1">
                   <h4 className="font-semibold mb-2">How reputation is calculated:</h4>
                   <ul className="text-sm space-y-1 text-zinc-600 dark:text-zinc-400">

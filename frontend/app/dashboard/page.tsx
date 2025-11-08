@@ -65,8 +65,18 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-zinc-950 dark:via-purple-950/20 dark:to-blue-950/20 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+        </div>
+        <div className="relative z-10">
+          <div className="relative">
+            <Loader2 className="w-16 h-16 animate-spin text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text" />
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse" />
+          </div>
+          <p className="mt-4 text-zinc-600 dark:text-zinc-400 font-medium">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -77,8 +87,18 @@ export default function DashboardPage() {
 
   // Show loading while redirecting
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-zinc-950 dark:via-purple-950/20 dark:to-blue-950/20 relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+      </div>
+      <div className="relative z-10">
+        <div className="relative">
+          <Loader2 className="w-16 h-16 animate-spin text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text" />
+          <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse" />
+        </div>
+        <p className="mt-4 text-zinc-600 dark:text-zinc-400 font-medium">Redirecting...</p>
+      </div>
     </div>
   );
 }

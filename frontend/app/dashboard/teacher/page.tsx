@@ -103,36 +103,51 @@ export default function TeacherDashboard() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-bold mb-2">Teacher Dashboard</h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Manage tasks, answer questions, and review students
-          </p>
-        </div>
-        <Link href="/dashboard/teacher/create-homework">
-          <Button size="lg" disabled={profile.token_balance < 1}>
-            <Plus className="w-5 h-5 mr-2" />
-            Create Task
-          </Button>
-        </Link>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-zinc-950 dark:via-purple-950/20 dark:to-blue-950/20 relative">
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
       </div>
 
-      {/* Token Balance Warning */}
-      {profile.token_balance < 1 && (
-        <Card className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-900/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Coins className="w-5 h-5 text-orange-600" />
-              <p className="text-orange-900 dark:text-orange-100">
-                <strong>Insufficient tokens!</strong> You need at least 1 token to create a task.
-                Each task costs 1 token.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <div className="container mx-auto py-8 px-4 relative z-10">
+        <div className="flex items-center justify-between mb-8 animate-fade-in">
+          <div>
+            <h1 className="text-5xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Teacher Dashboard
+            </h1>
+            <p className="text-lg text-zinc-700 dark:text-zinc-300 font-medium">
+              Manage tasks, answer questions, and review students 👨‍🏫
+            </p>
+          </div>
+          <Link href="/dashboard/teacher/create-homework">
+            <Button
+              size="lg"
+              disabled={profile.token_balance < 1}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl smooth-transition hover:scale-105"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create Task
+            </Button>
+          </Link>
+        </div>
+
+        {/* Token Balance Warning */}
+        {profile.token_balance < 1 && (
+          <Card className="mb-6 border-2 border-orange-500/30 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 shadow-lg card-hover animate-scale-in">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-center shadow-md">
+                  <Coins className="w-6 h-6 text-white" />
+                </div>
+                <p className="font-medium text-orange-900 dark:text-orange-100">
+                  <strong className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Insufficient tokens!</strong> You need at least 1 token to create a task.
+                  Each task costs 1 token.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -289,6 +304,7 @@ export default function TeacherDashboard() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

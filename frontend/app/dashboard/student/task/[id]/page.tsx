@@ -15,6 +15,8 @@ import type { Homework, TaskResource } from '@/lib/types/database';
 import { ArrowLeft, Download, FileText, Users, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/ui/toast';
+import { LoadingPage } from '@/components/ui/loading-spinner';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -22,6 +24,7 @@ export default function StudentTaskViewPage() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const params = useParams();
+  const toast = useToast();
   const homeworkId = params.id as string;
 
   const [profile, setProfile] = useState<any>(null);
@@ -74,7 +77,7 @@ export default function StudentTaskViewPage() {
         setTaskResources(resourcesData);
       } catch (error: any) {
         console.error('Error loading data:', error);
-        alert('Error loading task details');
+        toast.error('Loading failed', 'Error loading task details');
         router.push('/dashboard/student');
       } finally {
         setLoading(false);
@@ -82,7 +85,7 @@ export default function StudentTaskViewPage() {
     }
 
     loadData();
-  }, [address, isConnected, router, homeworkId]);
+  }, [address, isConnected, router, homeworkId, toast]);
 
   async function handleEnroll() {
     if (!profile || !homework) return;
@@ -90,14 +93,14 @@ export default function StudentTaskViewPage() {
     setEnrolling(true);
     try {
       await enrollInHomework(profile.id, homework.id);
-      alert('Enrolled successfully! ✅');
+      toast.success('Enrolled successfully!', 'Redirecting to your task...');
       router.push(`/dashboard/student/homework/${homework.id}`);
     } catch (error: any) {
       console.error('Error enrolling:', error);
       if (error.message?.includes('duplicate')) {
-        alert('You are already enrolled in this task!');
+        toast.warning('Already enrolled', 'You are already enrolled in this task!');
       } else {
-        alert('Error enrolling. Please try again.');
+        toast.error('Enrollment failed', 'Error enrolling. Please try again.');
       }
     } finally {
       setEnrolling(false);
@@ -105,7 +108,7 @@ export default function StudentTaskViewPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <LoadingPage />;
   }
 
   if (!profile || !homework) {

@@ -24,15 +24,20 @@ import {
   CheckCircle,
   Award,
   Eye,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/ui/toast';
+import { LoadingPage } from '@/components/ui/loading-spinner';
+import { cn } from '@/lib/utils';
 
 const supabase = createSupabaseBrowserClient();
 
 export default function StudentDashboard() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
+  const toast = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [availableHomeworks, setAvailableHomeworks] = useState<HomeworkWithTeacher[]>([]);
   const [myEnrollments, setMyEnrollments] = useState<EnrollmentWithDetails[]>([]);
@@ -111,13 +116,13 @@ export default function StudentDashboard() {
       const homeworksData = await getAvailableHomeworks();
       setAvailableHomeworks(homeworksData);
 
-      alert('Enrolled successfully! ✅');
+      toast.success('Enrolled successfully!', 'You can now start working on this task.');
     } catch (error: any) {
       console.error('Error enrolling:', error);
       if (error.message?.includes('duplicate')) {
-        alert('You are already enrolled in this task!');
+        toast.warning('Already enrolled', 'You are already enrolled in this task!');
       } else {
-        alert('Error enrolling. Please try again.');
+        toast.error('Enrollment failed', 'Error enrolling. Please try again.');
       }
     } finally {
       setEnrolling(null);
@@ -125,7 +130,7 @@ export default function StudentDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <LoadingPage />;
   }
 
   if (!profile) {
@@ -135,96 +140,107 @@ export default function StudentDashboard() {
   const unansweredQuestions = myQuestions.filter(q => !q.is_answered).length;
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Student Dashboard</h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Browse tasks, ask questions, and learn!
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-zinc-950 dark:via-purple-950/20 dark:to-blue-950/20 relative">
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
+      </div>
 
-        {/* Mentor Eligibility Banner */}
-        {canBecomeMentor && (
-          <Card className="mb-6 border-purple-500 bg-purple-50 dark:bg-purple-900/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Trophy className="w-6 h-6 text-purple-600" />
-                  <div>
-                    <p className="font-semibold text-purple-900 dark:text-purple-100">
-                      🎉 You're eligible to become a Mentor!
-                    </p>
-                    <p className="text-sm text-purple-700 dark:text-purple-200">
-                      You have {profile?.rating?.toFixed(1) || '0.0'}+ stars and {profile?.completed_count || 0}+
-                      completed tasks
-                    </p>
+      <div className="container mx-auto py-8 px-4 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8 animate-fade-in">
+            <h1 className="text-5xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Student Dashboard
+            </h1>
+            <p className="text-lg text-zinc-700 dark:text-zinc-300 font-medium">
+              Browse tasks, ask questions, and learn! 📚
+            </p>
+          </div>
+
+          {/* Mentor Eligibility Banner */}
+          {canBecomeMentor && (
+            <Card className="mb-6 border-2 border-purple-500/30 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 shadow-lg card-hover animate-scale-in">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-md">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent text-lg">
+                        🎉 You're eligible to become a Mentor!
+                      </p>
+                      <p className="text-sm text-purple-700 dark:text-purple-200 font-medium">
+                        You have {profile?.rating?.toFixed(1) || '0.0'}+ stars and {profile?.completed_count || 0}+
+                        completed tasks
+                      </p>
+                    </div>
                   </div>
+                  <Link href="/dashboard/student/become-mentor">
+                    <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-md hover:shadow-lg smooth-transition hover:scale-105">
+                      <Award className="w-4 h-4 mr-2" />
+                      Become a Mentor
+                    </Button>
+                  </Link>
                 </div>
-                <Link href="/dashboard/student/become-mentor">
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <Award className="w-4 h-4 mr-2" />
-                    Become a Mentor
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">My Enrollments</CardTitle>
-              <BookOpen className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{myEnrollments.length}</div>
-              <p className="text-xs text-zinc-500">active tasks</p>
-            </CardContent>
-          </Card>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="card-hover border-2 border-blue-500/20 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-zinc-900 shadow-md animate-scale-in">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">My Enrollments</CardTitle>
+                <BookOpen className="h-5 w-5 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{myEnrollments.length}</div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium mt-1">active tasks</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{profile?.completed_count || 0}</div>
-              <p className="text-xs text-zinc-500">tasks finished</p>
-            </CardContent>
-          </Card>
+            <Card className="card-hover border-2 border-green-500/20 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-zinc-900 shadow-md animate-scale-in" style={{ animationDelay: '0.1s' }}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Completed</CardTitle>
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">{profile?.completed_count || 0}</div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium mt-1">tasks finished</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">My Rating</CardTitle>
-              <Star className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{profile?.rating?.toFixed(1) || '0.0'}/5</div>
-              <p className="text-xs text-zinc-500">
-                {profile?.total_reviews || 0} {(profile?.total_reviews || 0) === 1 ? 'review' : 'reviews'}
-              </p>
-            </CardContent>
-          </Card>
+            <Card className="card-hover border-2 border-yellow-500/20 bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-950/20 dark:to-zinc-900 shadow-md animate-scale-in" style={{ animationDelay: '0.2s' }}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">My Rating</CardTitle>
+                <Star className="h-5 w-5 text-yellow-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent">{profile?.rating?.toFixed(1) || '0.0'}/5</div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium mt-1">
+                  {profile?.total_reviews || 0} {(profile?.total_reviews || 0) === 1 ? 'review' : 'reviews'}
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Token Balance</CardTitle>
-              <Coins className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{profile?.token_balance || 0}</div>
-              <p className="text-xs text-zinc-500">tokens</p>
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="card-hover border-2 border-orange-500/20 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-zinc-900 shadow-md animate-scale-in" style={{ animationDelay: '0.3s' }}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Token Balance</CardTitle>
+                <Coins className="h-5 w-5 text-orange-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">{profile?.token_balance || 0}</div>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium mt-1">tokens</p>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* My Enrollments */}
-        {myEnrollments.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">My Enrollments</h2>
+          {/* My Enrollments */}
+          {myEnrollments.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">My Enrollments</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {myEnrollments.map((enrollment) => {
                 return (
@@ -283,9 +299,9 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* Available Tasks */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Available Tasks</h2>
+          {/* Available Tasks */}
+          <div>
+            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Available Tasks</h2>
           {availableHomeworks.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
@@ -345,7 +361,12 @@ export default function StudentDashboard() {
                           </Button>
                         </Link>
                         <Button
-                          className="w-full"
+                          className={cn(
+                            "w-full smooth-transition",
+                            !isEnrolled && enrolling !== homework.id && slotsLeft > 0
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg hover:scale-105"
+                              : ""
+                          )}
                           disabled={isEnrolled || enrolling === homework.id || slotsLeft === 0}
                           onClick={() => handleEnroll(homework.id)}
                         >
@@ -366,6 +387,7 @@ export default function StudentDashboard() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

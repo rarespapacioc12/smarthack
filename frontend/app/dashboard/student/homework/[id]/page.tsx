@@ -19,6 +19,8 @@ import { Upload, FileText, CheckCircle, MessageCircle, Loader2, ArrowLeft, Downl
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/ui/toast';
+import { LoadingPage } from '@/components/ui/loading-spinner';
 
 const supabase = createSupabaseBrowserClient();
 
@@ -26,6 +28,7 @@ export default function StudentHomeworkPage() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const params = useParams();
+  const toast = useToast();
   const homeworkId = params.id as string;
 
   const [profile, setProfile] = useState<any>(null);
@@ -74,7 +77,7 @@ export default function StudentHomeworkPage() {
         });
 
         if (enrollmentsData.length === 0) {
-          alert('You are not enrolled in this task');
+          toast.warning('Not enrolled', 'You are not enrolled in this task');
           router.push('/dashboard/student');
           return;
         }
@@ -105,7 +108,7 @@ export default function StudentHomeworkPage() {
         setTaskResources(resourcesData);
       } catch (error: any) {
         console.error('Error loading data:', error);
-        alert('Error loading task details');
+        toast.error('Loading failed', 'Error loading task details');
         router.push('/dashboard/student');
       } finally {
         setLoading(false);
@@ -113,7 +116,7 @@ export default function StudentHomeworkPage() {
     }
 
     loadData();
-  }, [address, isConnected, router, homeworkId]);
+  }, [address, isConnected, router, homeworkId, toast]);
 
   async function handleSubmitSolution() {
     if (!enrollment || !submissionText.trim()) return;
@@ -139,10 +142,10 @@ export default function StudentHomeworkPage() {
       });
 
       setEnrollment(enrollmentsData[0]);
-      alert('Solution submitted successfully! ✅ Your teacher will review it soon.');
+      toast.success('Solution submitted!', 'Your teacher will review it soon.');
     } catch (error: any) {
       console.error('Error submitting solution:', error);
-      alert('Error submitting solution. Please try again.');
+      toast.error('Submission failed', 'Error submitting solution. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -187,10 +190,10 @@ export default function StudentHomeworkPage() {
       setSubmissions(submissionsData);
 
       setUploadedFile(null);
-      alert('File uploaded successfully! ✅');
+      toast.success('File uploaded!', 'Your file has been uploaded successfully.');
     } catch (error: any) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file. Please try again.');
+      toast.error('Upload failed', 'Error uploading file. Please try again.');
     } finally {
       setUploading(false);
     }
