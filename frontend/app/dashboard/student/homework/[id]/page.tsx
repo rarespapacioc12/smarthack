@@ -213,11 +213,14 @@ export default function StudentHomeworkPage() {
 
       setUploadedFile(null);
 <<<<<<< HEAD
+<<<<<<< HEAD
       toast.success('File uploaded!', 'Your file has been uploaded successfully.');
     } catch (error: any) {
       console.error('Error uploading file:', error);
       toast.error('Upload failed', 'Error uploading file. Please try again.');
 =======
+=======
+>>>>>>> c89133b (css & animations)
       // Reset file input
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -226,7 +229,16 @@ export default function StudentHomeworkPage() {
     } catch (error: any) {
       console.error('Unexpected error uploading file:', error);
       alert(`❌ Unexpected error uploading file.\n\nFile: ${uploadedFile.name}\nPlease try again or contact your teacher if the problem persists.`);
+<<<<<<< HEAD
 >>>>>>> 71a7763 (versiune care merge)
+=======
+=======
+      toast.success('File uploaded!', 'Your file has been uploaded successfully.');
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      toast.error('Upload failed', 'Error uploading file. Please try again.');
+>>>>>>> 8ec33f1 (css & animations)
+>>>>>>> c89133b (css & animations)
     } finally {
       setUploading(false);
     }
